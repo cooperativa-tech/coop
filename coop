@@ -40,13 +40,16 @@ function _coop_copy() {
 }
 
 function _coop_get_repo() {
-  if [ -z $COOPERATIVA ]; then
-    echo "$COOPERATIVA/secrets"
-  else
-    clone_path=/tmp/cooperativa
-    git clone --template="" keybase://team/cooperativa/secrets $clone_path
+  clone_path=/tmp/cooperativa/
 
-    echo $clone_path
+  if [ -n "$COOPERATIVA" ]; then
+    echo "$COOPERATIVA/secrets"
+  elif [ -d "$clone_path" ]; then
+    echo "$clone_path"
+  else
+    git clone --template="" keybase://team/cooperativa/secrets "$clone_path/secrets"
+
+    echo "$clone_path"
   fi
 }
 
@@ -91,17 +94,13 @@ function _coop_copy_password() {
   fi
 }
 
-file="/Users/frm/Developer/cooperativa/secrets/namecheap"
-
-# TODO: Change
-# service="$1"
-service="$file"
+service="$1"
 repo=$(_coop_get_repo)
-file_path="$repo/secrets/$1"
+file_path="$repo/secrets/$service"
 
-email=$(_coop_get_field $service "email")
-username=$(_coop_get_field $service "username")
-password=$(_coop_get_field $service "password")
+email=$(_coop_get_field $file_path "email")
+username=$(_coop_get_field $file_path "username")
+password=$(_coop_get_field $file_path "password")
 
 _coop_copy_login $email $username
 _coop_ensure_return
