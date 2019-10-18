@@ -43,11 +43,13 @@ function _coop_get_repo() {
   clone_path=/tmp/cooperativa/
 
   if [ -n "$COOPERATIVA" ]; then
-    echo "$COOPERATIVA/secrets"
+    (cd "$COOPERATIVA/secrets" && git pull > /dev/null 2>&1)
+
+    echo "$COOPERATIVA"
   elif [ -d "$clone_path" ]; then
     echo "$clone_path"
   else
-    git clone --template="" keybase://team/cooperativa/secrets "$clone_path/secrets"
+    git clone --template="" keybase://team/cooperativa/secrets "$clone_path/secrets" 2>&1
 
     echo "$clone_path"
   fi
