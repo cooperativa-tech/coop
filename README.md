@@ -23,6 +23,6 @@ password: our-password
 ## Install
 
 ```
-wget file
-mv file /usr/local/bin/ # or another directory that is in your `$PATH`
+wget https://raw.githubusercontent.com/cooperativa-tech/coop/master/coop
+mv coop /usr/local/bin/ # or another directory that is in your `$PATH`
 ```
