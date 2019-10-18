@@ -1,0 +1,109 @@
+#!/usr/bin/env sh
+
+_COLOR_BLUE='\033[1;34m'
+_COLOR_GREEN='\033[1;32m'
+_COLOR_RED='\033[1;91m'
+_COLOR_RESET='\033[0m'
+
+_coop_pp() {
+  echo "$1[$2]: $3${_COLOR_RESET}\n"
+}
+
+_coop_pp_info() {
+  _coop_pp $_COLOR_BLUE "coop" "$1"
+}
+
+_coop_pp_success() {
+  _coop_pp $_COLOR_GREEN "coop" "$1"
+}
+
+_coop_pp_error() {
+  _coop_pp $_COLOR_RED "coop" "$1"
+}
+
+_coop_pp_neutral() {
+  _coop_pp $_COLOR_RESET "    " "$1"
+}
+
+_coop_pp_no_prefix() {
+  echo "     $1"
+}
+
+function _coop_copy() {
+  if which pbcopy &> /dev/null; then
+    echo $@ | pbcopy
+  elif which xclip &> /dev/null; then
+    xclip -selection clipboard < $@
+  else
+    _coop_pp_error "Unable to copy, please do it manually: $@"
+  fi
+}
+
+function _coop_get_repo() {
+  if [ -z $COOPERATIVA ]; then
+    echo "$COOPERATIVA/secrets"
+  else
+    clone_path=/tmp/cooperativa
+    git clone --template="" keybase://team/cooperativa/secrets $clone_path
+
+    echo $clone_path
+  fi
+}
+
+function _coop_get_field() {
+  egrep -hio "$2:\s*(.*)$" $1 \
+    | cut -d ':' -f 2  \
+    | sed -e 's/^[[:space:]]*//'
+}
+
+function _coop_ensure_return() {
+  read -p "[coop]: press enter when you wish to continue. "
+}
+
+function _coop_copy_login() {
+  email=$1
+  username=$2
+
+  if [ -n "$email" ] && [ -n "$username" ]; then
+    _coop_pp_info "found email and username. Please copy the relevant one."
+    _coop_pp_no_prefix "email: $email"
+    _coop_pp_no_prefix "username: $username"
+    _coop_pp_no_prefix ""
+  elif [ -n "$email" ]; then
+    _coop_pp_success "email copied to your clipboard"
+    _coop_copy "$email"
+  elif [ -n "$username" ]; then
+    _coop_pp_success "username copied to your clipboard"
+    _coop_copy "$username"
+  else
+    _coop_pp_error "WARNING: no username or email found. Proceed with caution"
+  fi
+}
+
+function _coop_copy_password() {
+  password="$1"
+
+  if [ -n "$password" ]; then
+    _coop_copy "$1"
+    _coop_pp_success "the password is in your clipboard. Thank your for your cooperation"
+  else
+    _coop_pp_error "ERROR: no password found. Please check the file format."
+  fi
+}
+
+file="/Users/frm/Developer/cooperativa/secrets/namecheap"
+
+# TODO: Change
+# service="$1"
+service="$file"
+repo=$(_coop_get_repo)
+file_path="$repo/secrets/$1"
+
+email=$(_coop_get_field $service "email")
+username=$(_coop_get_field $service "username")
+password=$(_coop_get_field $service "password")
+
+_coop_copy_login $email $username
+_coop_ensure_return
+echo ""
+_coop_copy_password $password
