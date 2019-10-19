@@ -8,7 +8,7 @@ access them.
 Simply call `coop` with the name of the service you wish to copy.
 
 ```shell
-coop netflify
+coop netlify
 ```
 
 ## File format
